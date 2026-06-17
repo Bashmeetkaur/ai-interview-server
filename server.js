@@ -17,11 +17,7 @@ connectDB();
 // Middleware
 app.use(
   cors({
-    origin: [
-      "http://localhost:3000",
-      "https://ai-interview-platform-gamma-beryl.vercel.app/"  
-    
-    ],
+    origin: "*",
     credentials: true,
   })
 );
