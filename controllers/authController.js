@@ -96,15 +96,26 @@ expiresIn: "7d",
 };
 
 // EMAIL TRANSPORTER
-const transporter = nodemailer.createTransport({
+const transporter =
+nodemailer.createTransport({
+
   host: "smtp.gmail.com",
-  port: 465,
-  secure: true,
+
+  port: 587,
+
+  secure: false,
 
   auth: {
     user: process.env.EMAIL_USER,
     pass: process.env.EMAIL_PASS,
   },
+
+  connectionTimeout: 10000,
+
+  greetingTimeout: 10000,
+
+  socketTimeout: 10000,
+
 });
 
 // ==============================
@@ -361,10 +372,16 @@ try {
   });
 
 } catch (error) {
+
+  console.error(
+    "FORGOT PASSWORD ERROR:",
+    error
+  );
+
   res.status(500).json({
-    message:
-      error.message,
+    message: error.message,
   });
+
 }
 
 };
