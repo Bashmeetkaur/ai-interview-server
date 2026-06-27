@@ -74,8 +74,6 @@ const jwt = require("jsonwebtoken");
 
 const crypto = require("crypto");
 
-const nodemailer = require("nodemailer");
-
 const {
 OAuth2Client,
 } = require("google-auth-library");
@@ -96,10 +94,20 @@ expiresIn: "7d",
 };
 
 // EMAIL TRANSPORTER
+const nodemailer = require("nodemailer");
+
+const dns = require("dns");
+
+dns.setDefaultResultOrder("ipv4first");
+
 const transporter =
 nodemailer.createTransport({
 
-  service: "gmail",
+  host: process.env.EMAIL_HOST,
+
+  port: process.env.EMAIL_PORT,
+
+  secure: false,
 
   auth: {
     user: process.env.EMAIL_USER,
