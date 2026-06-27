@@ -107,11 +107,15 @@ nodemailer.createTransport({
 
   port: process.env.EMAIL_PORT,
 
-  secure: false,
+  secure: true,
 
   auth: {
     user: process.env.EMAIL_USER,
     pass: process.env.EMAIL_PASS,
+  },
+
+  tls: {
+    family: 4,
   },
 
 });
