@@ -96,28 +96,15 @@ expiresIn: "7d",
 // EMAIL TRANSPORTER
 const nodemailer = require("nodemailer");
 
-const dns = require("dns");
-
-dns.setDefaultResultOrder("ipv4first");
-
-const transporter =
-nodemailer.createTransport({
-
-  host: process.env.EMAIL_HOST,
-
-  port: process.env.EMAIL_PORT,
-
-  secure: true,
+const transporter = nodemailer.createTransport({
+  service: "gmail",
 
   auth: {
     user: process.env.EMAIL_USER,
     pass: process.env.EMAIL_PASS,
   },
 
-  tls: {
-    family: 4,
-  },
-
+  family: 4,
 });
 
 // ==============================
