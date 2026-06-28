@@ -96,15 +96,39 @@ expiresIn: "7d",
 // EMAIL TRANSPORTER
 const nodemailer = require("nodemailer");
 
-const transporter = nodemailer.createTransport({
-  service: "gmail",
+const transporter =
+nodemailer.createTransport({
+
+  host: process.env.EMAIL_HOST,
+
+  port: 587,
+
+  secure: false,
 
   auth: {
     user: process.env.EMAIL_USER,
     pass: process.env.EMAIL_PASS,
   },
 
-  family: 4,
+});
+
+transporter.verify((error, success) => {
+
+  if (error) {
+
+    console.log(
+      "SMTP ERROR:",
+      error
+    );
+
+  } else {
+
+    console.log(
+      "SMTP SERVER READY"
+    );
+
+  }
+
 });
 
 // ==============================
