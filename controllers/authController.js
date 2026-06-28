@@ -57,7 +57,7 @@
 //         token: generateToken(user._id),
 //       });
 //     } else {
-//       res.status(401).json({ message: "Invalid credentials" });
+//    c   res.status(401).json({ message: "Invalid credentials" });
 //     }
 //   } catch (error) {
 //     res.status(500).json({ message: error.message });
@@ -96,40 +96,45 @@ expiresIn: "7d",
 // EMAIL TRANSPORTER
 const nodemailer = require("nodemailer");
 
-const transporter =
-nodemailer.createTransport({
+const transporter = nodemailer.createTransport({
+host: "smtp-relay.brevo.com",
 
-  host: process.env.EMAIL_HOST,
+port: 465,
 
-  port: 587,
+secure: true,
 
-  secure: false,
+auth: {
+user: process.env.EMAIL_USER,
+pass: process.env.EMAIL_PASS,
+},
 
-  auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS,
-  },
+tls: {
+rejectUnauthorized: false,
+},
 
+connectionTimeout: 10000,
 });
 
 transporter.verify((error, success) => {
 
-  if (error) {
+if (error) {
 
-    console.log(
-      "SMTP ERROR:",
-      error
-    );
+console.log(
+  "SMTP ERROR:",
+  error
+);
 
-  } else {
+} else {
 
-    console.log(
-      "SMTP SERVER READY"
-    );
+console.log(
+  "SMTP SERVER READY"
+);
 
-  }
+
+}
 
 });
+
 
 // ==============================
 // SIGNUP
