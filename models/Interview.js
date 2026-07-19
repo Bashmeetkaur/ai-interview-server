@@ -27,6 +27,34 @@ const interviewSchema = new mongoose.Schema(
       },
     ],
 
+      voiceAnswers: [
+    {
+      question: {
+        type: String,
+      },
+
+      transcript: {
+        type: String,
+        default: "",
+      },
+
+      audioUrl: {
+        type: String,
+        default: "",
+      },
+
+      duration: {
+        type: Number,
+        default: 0,
+      },
+
+      createdAt: {
+        type: Date,
+        default: Date.now,
+      },
+    },
+  ],
+
     feedback: [
       {
         question: String,

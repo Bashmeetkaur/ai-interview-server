@@ -9,11 +9,13 @@ const {
   getInterviewById,
   getDashboardInsights,
   saveInterviewProgress,
-  deleteInterview
+  deleteInterview,
+  saveVoiceAnswer,
 } = require("../controllers/interviewController");
 
 router.post("/start", protect, startInterview);
 router.post("/:id/submit", protect, submitAnswers);
+router.put("/:id/voice-answer", protect, saveVoiceAnswer);
 router.put("/:id/save", protect, saveInterviewProgress);
 router.get("/insights", protect, getDashboardInsights);
 router.get("/", protect, getUserInterviews);

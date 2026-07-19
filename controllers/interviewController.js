@@ -320,6 +320,54 @@ const deleteInterview = async (req, res) => {
   }
 };
 
+const saveVoiceAnswer = async (req, res) => {
+
+  try {
+
+    const { id } = req.params;
+
+    const { question, transcript } = req.body;
+
+    const interview = await Interview.findById(id);
+
+    if (!interview) {
+
+      return res.status(404).json({
+        message: "Interview not found",
+      });
+
+    }
+
+    interview.voiceAnswers.push({
+
+      question,
+
+      transcript,
+
+    });
+
+    await interview.save();
+
+    res.json({
+
+      message: "Voice answer saved",
+
+    });
+
+  }
+
+  catch (error) {
+
+    res.status(500).json({
+
+      message: error.message,
+
+    });
+
+  }
+
+};
+
 // ✅ EXPORTS
 module.exports = {
   startInterview,
@@ -329,4 +377,6 @@ module.exports = {
   getDashboardInsights,
   saveInterviewProgress,
   deleteInterview,
+  saveVoiceAnswer,
+  
 };
