@@ -107,21 +107,23 @@ const generateAIFeedback = async (
     // =========================
     // NEW: Save interview type
     // =========================
-    const interview =
-      await Interview.create({
-        user: req.user._id,
+    const interviewData = {
+      user: req.user._id,
+      role,
+      difficulty,
+      interviewType: interviewType || "written",
+      questions,
+      status: "started",
+    };
 
-        role,
+    // Remove unused field
+    if (interviewData.interviewType === "written") {
+      delete interviewData.voiceAnswers;
+    } else {
+      delete interviewData.answers;
+    }
 
-        difficulty,
-
-        interviewType:
-          interviewType || "written",
-
-        questions,
-
-        status: "started",
-      });
+    const interview = await Interview.create(interviewData);
 
     res.status(201).json(interview);
 
