@@ -82,8 +82,14 @@ const generateAIFeedback = async (
 // 🚀 @route POST /api/interviews/start
     const startInterview = async (req, res) => {
     try {
-    const { role, difficulty } =
-      req.body;
+      // =========================
+      // NEW: Receive interview type
+      // =========================
+      const {
+        role,
+        difficulty,
+        interviewType,
+      } = req.body;
 
     // AI GENERATED QUESTIONS
     const generatedQuestions =
@@ -98,7 +104,9 @@ const generateAIFeedback = async (
         question: q,
       }));
 
-    // CREATE INTERVIEW
+    // =========================
+    // NEW: Save interview type
+    // =========================
     const interview =
       await Interview.create({
         user: req.user._id,
@@ -106,6 +114,9 @@ const generateAIFeedback = async (
         role,
 
         difficulty,
+
+        interviewType:
+          interviewType || "written",
 
         questions,
 
@@ -139,8 +150,44 @@ const submitAnswers = async (req, res) => {
       return res.status(401).json({ message: "Not authorized" });
     }
 
-    interview.answers = answers;
-    interview.feedback = await generateAIFeedback(answers);
+    // ======================================
+    // NEW: Written interview only
+    // ======================================
+
+    if (
+      interview.interviewType === "written"
+    ) {
+
+      interview.answers = answers;
+
+      interview.feedback =
+        await generateAIFeedback(
+          answers
+        );
+
+    }
+
+    // ======================================
+    // NEW: Voice interview only
+    // ======================================
+
+    else {
+
+      const formattedAnswers =
+        interview.voiceAnswers.map(
+          (item) => ({
+            question: item.question,
+            answer: item.transcript,
+          })
+        );
+
+      interview.feedback =
+        await generateAIFeedback(
+          formattedAnswers
+        );
+
+    }
+
     interview.status = "completed";
 
     const updatedInterview = await interview.save();
@@ -241,7 +288,7 @@ const getDashboardInsights = async (req, res) => {
 // @route PUT /api/interviews/:id/save
 const saveInterviewProgress = async (req, res) => {
   try {
-    const { answers } = req.body;
+    const { answers, voiceAnswers, } = req.body;
 
     const interview = await Interview.findById(req.params.id);
 
@@ -261,8 +308,23 @@ const saveInterviewProgress = async (req, res) => {
       });
     }
 
-    // save answers only
-    interview.answers = answers;
+    // ====================================
+    // NEW
+    // ====================================
+
+    if (
+      interview.interviewType ===
+      "written"
+    ) {
+
+      interview.answers = answers;
+
+    } else {
+
+      interview.voiceAnswers =
+        voiceAnswers;
+
+    }
 
     // keep status as started
     interview.status = "started";
@@ -338,13 +400,29 @@ const saveVoiceAnswer = async (req, res) => {
 
     }
 
+  // =====================================
+  // Avoid duplicate entries
+  // =====================================
+
+  const existing =
+    interview.voiceAnswers.find(
+      (item) =>
+        item.question === question
+    );
+
+  if (existing) {
+
+    existing.transcript =
+      transcript;
+
+  } else {
+
     interview.voiceAnswers.push({
-
       question,
-
       transcript,
-
     });
+
+  }
 
     await interview.save();
 

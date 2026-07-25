@@ -27,6 +27,12 @@ const interviewSchema = new mongoose.Schema(
       },
     ],
 
+    interviewType: {
+    type: String,
+    enum: ["written", "voice"],
+    required: true,
+},
+
       voiceAnswers: [
     {
       question: {
