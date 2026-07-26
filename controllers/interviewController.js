@@ -401,6 +401,16 @@ const saveVoiceAnswer = async (req, res) => {
       });
 
     }
+    
+    if (interview.interviewType !== "voice") {
+      return res.status(400).json({
+        message: "This API is only for voice interviews",
+      });
+    }
+
+    if (!interview.voiceAnswers) {
+      interview.voiceAnswers = [];
+    }
 
   // =====================================
   // Avoid duplicate entries
