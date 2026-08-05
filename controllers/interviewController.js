@@ -390,7 +390,7 @@ const saveVoiceAnswer = async (req, res) => {
 
     const { id } = req.params;
 
-    const { question, transcript } = req.body;
+    const { question, transcript, audioUrl,} = req.body;
 
     const interview = await Interview.findById(id);
 
@@ -424,14 +424,18 @@ const saveVoiceAnswer = async (req, res) => {
 
   if (existing) {
 
-    existing.transcript =
-      transcript;
+    existing.transcript = transcript;
+
+    existing.audioUrl = audioUrl;
 
   } else {
 
     interview.voiceAnswers.push({
-      question,
-      transcript,
+
+        question,
+        transcript,
+        audioUrl,
+
     });
 
   }
