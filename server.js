@@ -7,6 +7,7 @@ const cors = require("cors");
 const authRoutes = require("./routes/authRoutes");
 const userRoutes = require("./routes/userRoutes");
 const interviewRoutes = require("./routes/interviewRoutes");
+const uploadRoutes = require("./routes/uploadRoutes");
 
 const { testAI } = require("./services/aiService");
 
@@ -26,6 +27,7 @@ app.use(express.json());
 app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/interviews", interviewRoutes);
+app.use("/api/upload", uploadRoutes);
 
 // ✅ TEST AI HERE
 // testAI();
