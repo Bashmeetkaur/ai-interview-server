@@ -37,15 +37,20 @@ const uploadAudio = async (req, res) => {
       audioUrl,
     });
 
-  } catch (error) {
+  } 
+  catch (error) {
 
-    console.error(error);
+  console.error("UPLOAD ERROR:", error);
 
-    res.status(500).json({
-      message: "Audio upload failed",
-    });
+  res.status(500).json({
 
-  }
+    message: "Audio upload failed",
+
+    error: error.message,
+
+  });
+
+}
 };
 
 module.exports = {
