@@ -221,23 +221,115 @@ const getUserInterviews = async (req, res) => {
 };
 
 // 🚀 @route GET /api/interviews/:id
+// const getInterviewById = async (req, res) => {
+//   try {
+//     const interview = await Interview.findById(req.params.id);
+
+//     if (!interview) {
+//       return res.status(404).json({ message: "Interview not found" });
+//     }
+
+//     if (interview.user.toString() !== req.user._id.toString()) {
+//       return res.status(401).json({ message: "Not authorized" });
+//     }
+
+//     res.json(interview);
+//   } catch (error) {
+//     res.status(500).json({ message: error.message });
+//   }
+// };
 const getInterviewById = async (req, res) => {
   try {
-    const interview = await Interview.findById(req.params.id);
+
+    const interview = await Interview.findById(
+      req.params.id
+    );
 
     if (!interview) {
-      return res.status(404).json({ message: "Interview not found" });
+      return res.status(404).json({
+        message: "Interview not found",
+      });
     }
 
-    if (interview.user.toString() !== req.user._id.toString()) {
-      return res.status(401).json({ message: "Not authorized" });
+    // ================================
+    // Owner check
+    // ================================
+
+    if (
+      interview.user.toString() !==
+      req.user._id.toString()
+    ) {
+      return res.status(401).json({
+        message: "Not authorized",
+      });
+    }
+
+    // ================================
+    // Generate temporary signed URLs
+    // for voice recordings
+    // ================================
+
+    if (
+      interview.interviewType === "voice" &&
+      interview.voiceAnswers
+    ) {
+
+      for (
+        const answer of interview.voiceAnswers
+      ) {
+
+        if (answer.audioUrl) {
+
+          // Extract S3 object key
+          const url = new URL(
+            answer.audioUrl
+          );
+
+          const key =
+            decodeURIComponent(
+              url.pathname.substring(1)
+            );
+
+          const command =
+            new GetObjectCommand({
+              Bucket:
+                process.env.AWS_BUCKET_NAME,
+
+              Key: key,
+            });
+
+          // URL valid for 1 hour
+          const signedUrl =
+            await getSignedUrl(
+              s3,
+              command,
+              {
+                expiresIn: 3600,
+              }
+            );
+
+          // Send temporary URL to frontend
+          answer.audioUrl = signedUrl;
+        }
+      }
     }
 
     res.json(interview);
+
   } catch (error) {
-    res.status(500).json({ message: error.message });
+
+    console.error(
+      "GET INTERVIEW ERROR:",
+      error
+    );
+
+    res.status(500).json({
+      message: error.message,
+    });
   }
 };
+
+
 
 // 🚀 @route GET /api/interviews/insights
 const getDashboardInsights = async (req, res) => {
