@@ -1,6 +1,16 @@
 const Interview = require("../models/Interview");
 // const questionBank = require("../data/questionBank");
 const { evaluateAnswer, generateInterviewQuestions } = require("../services/aiService");
+const {
+  GetObjectCommand,
+} = require("@aws-sdk/client-s3");
+
+const {
+  getSignedUrl,
+} = require("@aws-sdk/s3-request-presigner");
+
+const s3 =
+  require("../config/s3");
 
 // // 🧠 Helper: Generate Feedback
 // const generateFeedback = (answers) => {
@@ -8,7 +18,7 @@ const { evaluateAnswer, generateInterviewQuestions } = require("../services/aiSe
 //     let score = 0;
 //     let comment = "";
 
-//     if (item.answer.length > 50) {
+//     if (item.answer. length > 50) {
 //       score = 8;
 //       comment = "Good detailed answer";
 //     } else if (item.answer.length > 20) {
@@ -280,37 +290,38 @@ const getInterviewById = async (req, res) => {
 
         if (answer.audioUrl) {
 
-          // Extract S3 object key
-          const url = new URL(
-            answer.audioUrl
+        const command =
+          new GetObjectCommand({
+
+            Bucket:
+              process.env.AWS_BUCKET_NAME,
+
+            Key:
+              answer.audioUrl,
+
+          });
+
+
+        // Generate fresh signed URL
+        const signedUrl =
+          await getSignedUrl(
+
+            s3,
+
+            command,
+
+            {
+              expiresIn: 3600,
+            }
+
           );
 
-          const key =
-            decodeURIComponent(
-              url.pathname.substring(1)
-            );
 
-          const command =
-            new GetObjectCommand({
-              Bucket:
-                process.env.AWS_BUCKET_NAME,
+        // Send temporary playable URL
+        // to frontend
+        answer.audioUrl = signedUrl;
 
-              Key: key,
-            });
-
-          // URL valid for 1 hour
-          const signedUrl =
-            await getSignedUrl(
-              s3,
-              command,
-              {
-                expiresIn: 3600,
-              }
-            );
-
-          // Send temporary URL to frontend
-          answer.audioUrl = signedUrl;
-        }
+}
       }
     }
 

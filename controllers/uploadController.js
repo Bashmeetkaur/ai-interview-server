@@ -1,9 +1,6 @@
 const {
   PutObjectCommand,
-  GetObjectCommand,
 } = require("@aws-sdk/client-s3");
-
-const { getSignedUrl } = require("@aws-sdk/s3-request-presigner");
 
 const { v4: uuidv4 } = require("uuid");
 
@@ -140,38 +137,18 @@ const uploadAudio = async (req, res) => {
 
     await s3.send(command);
 
-
     // ================================
-    // Generate signed playback URL
+    // Audio uploaded successfully
+    // Return only the permanent S3 key
     // ================================
-
-    const audioUrl =
-      await getSignedUrl(
-        s3,
-
-        new GetObjectCommand({
-
-          Bucket:
-            process.env.AWS_BUCKET_NAME,
-
-          Key:
-            fileName,
-
-        }),
-
-        {
-          expiresIn: 3600,
-        }
-      );
-
 
     console.log(
       "MP3 uploaded to S3"
     );
 
     console.log(
-      "Signed audio URL:",
-      audioUrl
+      "S3 Audio Key:",
+      fileName
     );
 
 
@@ -184,7 +161,7 @@ const uploadAudio = async (req, res) => {
       message:
         "Audio converted and uploaded successfully",
 
-      audioUrl,
+      audioUrl: fileName,
 
     });
 
