@@ -12,6 +12,7 @@ const generateInterviewQuestions = async (
   role,
   difficulty
 ) => {
+
   try {
 
     const prompt = `
@@ -74,8 +75,11 @@ Example format:
       "What challenges have you faced?",
       "Why should we hire you?",
     ];
+
   }
+
 };
+
 
 /* =========================
    EVALUATE ANSWERS
@@ -152,16 +156,16 @@ Score: No score available
 Feedback: AI evaluation failed
 Improvement: AI evaluation failed, Sorry, we couldn't evaluate this answer at the moment. Please try again later.
 `;
-  }
-};
 
+  }
+
+};
 
 
 module.exports = {
   evaluateAnswer,
   generateInterviewQuestions,
 };
-
 
 
 // const Groq = require("groq-sdk");
