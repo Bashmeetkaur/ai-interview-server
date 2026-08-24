@@ -52,7 +52,7 @@ Example format:
           },
         ],
 
-        model: "llama-3.3-70b-versatile",
+        model: "openai/gpt-oss-20b",
       });
 
     const content =
@@ -145,14 +145,17 @@ Improvement: <clear and actionable improvement suggestion>
           },
         ],
 
-        model: "llama-3.3-70b-versatile",
+        model: "openai/gpt-oss-20b",
       });
 
     return completion.choices[0].message.content;
 
   } catch (error) {
 
-    console.log(error);
+    console.error(
+      "GROQ ANSWER EVALUATION ERROR:",
+      error
+    );
 
     return `
 Score: No score available
