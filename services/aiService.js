@@ -66,7 +66,10 @@ Example format:
 
   } catch (error) {
 
-    console.log(error);
+      console.error(
+    "GROQ QUESTION GENERATION ERROR:",
+    error
+  );
 
     return [
       "Tell me about yourself.",
