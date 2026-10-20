@@ -326,6 +326,9 @@ try {
 
 };
 
+
+const { google } = require("googleapis");
+
 // ==============================
 // FORGOT PASSWORD
 // ==============================
@@ -352,39 +355,70 @@ const forgotPassword = async (req, res) => {
     const resetURL =
       `${process.env.CLIENT_URL}/reset-password/${resetToken}`;
 
-    const { data, error } = await resend.emails.send({
-      from: "AI Interview Platform <onboarding@resend.dev>",
-      to: [process.env.RESEND_TEST_EMAIL],
-      subject: "Password Reset",
-      html: `
+    // Configure Gmail API using the authorized sender account
+    const oauth2Client = new google.auth.OAuth2(
+      process.env.GMAIL_CLIENT_ID,
+      process.env.GMAIL_CLIENT_SECRET,
+      "http://localhost:5000/api/auth/gmail/callback"
+    );
+
+    oauth2Client.setCredentials({
+      refresh_token: process.env.GMAIL_REFRESH_TOKEN,
+    });
+
+    const gmail = google.gmail({
+      version: "v1",
+      auth: oauth2Client,
+    });
+
+    const senderEmail = process.env.GMAIL_SENDER_EMAIL;
+
+    if (!senderEmail) {
+      throw new Error("GMAIL_SENDER_EMAIL is missing from .env");
+    }
+
+    const message = [
+      `From: AI Interview Platform <${senderEmail}>`,
+      `To: ${email}`,
+      "Subject: Password Reset - AI Interview Platform",
+      "MIME-Version: 1.0",
+      "Content-Type: text/html; charset=UTF-8",
+      "",
+      `
         <h2>Password Reset</h2>
         <p>Click below to reset your password.</p>
         <p>This link expires in 15 minutes.</p>
-        <a href="${resetURL}">Reset Password</a>
+        <p>
+          <a href="${resetURL}">Reset Password</a>
+        </p>
+        <p>If you did not request this, you can ignore this email.</p>
       `,
+    ].join("\r\n");
+
+    const raw = Buffer.from(message).toString("base64url");
+
+    const result = await gmail.users.messages.send({
+      userId: "me",
+      requestBody: { raw },
     });
 
-    if (error) {
-      console.error("RESEND FORGOT PASSWORD ERROR:", error);
-
-      return res.status(500).json({
-        message: "Failed to send reset email",
-      });
-    }
-
-    console.log("Password reset email sent:", data.id);
+    console.log(
+      "Password reset email sent:",
+      result.data.id
+    );
 
     return res.json({
       message: "Reset email sent",
     });
   } catch (error) {
-    console.error("FORGOT PASSWORD ERROR:", error);
+    console.error("GMAIL FORGOT PASSWORD ERROR:", error.response?.data || error.message);
 
     return res.status(500).json({
       message: "Failed to send reset email",
     });
   }
 };
+
 
 
 // ==============================
