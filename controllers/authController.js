@@ -78,6 +78,8 @@ const {
 OAuth2Client,
 } = require("google-auth-library");
 
+const { Resend } = require("resend");
+
 const client = new OAuth2Client(
 process.env.GOOGLE_CLIENT_ID
 );
@@ -130,6 +132,7 @@ console.log("SMTP READY");
 });
 
 
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 
 // ==============================
@@ -326,79 +329,63 @@ try {
 // ==============================
 // FORGOT PASSWORD
 // ==============================
-const forgotPassword =
-async (req, res) => {
-try {
 
-  const { email } =
-    req.body;
+const forgotPassword = async (req, res) => {
+  try {
+    const { email } = req.body;
 
-  const user =
-    await User.findOne({
-      email,
+    const user = await User.findOne({ email });
+
+    if (!user) {
+      return res.status(404).json({
+        message: "User not found",
+      });
+    }
+
+    const resetToken = crypto.randomBytes(32).toString("hex");
+
+    user.resetPasswordToken = resetToken;
+    user.resetPasswordExpire = Date.now() + 15 * 60 * 1000;
+
+    await user.save();
+
+    const resetURL =
+      `${process.env.CLIENT_URL}/reset-password/${resetToken}`;
+
+    const { data, error } = await resend.emails.send({
+      from: "AI Interview Platform <onboarding@resend.dev>",
+      to: [process.env.RESEND_TEST_EMAIL],
+      subject: "Password Reset",
+      html: `
+        <h2>Password Reset</h2>
+        <p>Click below to reset your password.</p>
+        <p>This link expires in 15 minutes.</p>
+        <a href="${resetURL}">Reset Password</a>
+      `,
     });
 
-  if (!user) {
-    return res.status(404).json({
-      message:
-        "User not found",
+    if (error) {
+      console.error("RESEND FORGOT PASSWORD ERROR:", error);
+
+      return res.status(500).json({
+        message: "Failed to send reset email",
+      });
+    }
+
+    console.log("Password reset email sent:", data.id);
+
+    return res.json({
+      message: "Reset email sent",
+    });
+  } catch (error) {
+    console.error("FORGOT PASSWORD ERROR:", error);
+
+    return res.status(500).json({
+      message: "Failed to send reset email",
     });
   }
-
-  const resetToken =
-    crypto
-      .randomBytes(32)
-      .toString("hex");
-
-  user.resetPasswordToken =
-    resetToken;
-
-  user.resetPasswordExpire =
-    Date.now() +
-    15 * 60 * 1000;
-
-  await user.save();
-
-  const resetURL =
-    `${process.env.CLIENT_URL}/reset-password/${resetToken}`;
-
-  await transporter.sendMail({
-    from:
-      process.env.EMAIL_USER,
-
-    to: email,
-
-    subject:
-      "Password Reset",
-
-    html: `
-      <h2>Password Reset</h2>
-      <p>Click below link:</p>
-      <a href="${resetURL}">
-        Reset Password
-      </a>
-    `,
-  });
-
-  res.json({
-    message:
-      "Reset email sent",
-  });
-
-} catch (error) {
-
-  console.error(
-    "FORGOT PASSWORD ERROR:",
-    error
-  );
-
-  res.status(500).json({
-    message: error.message,
-  });
-
-}
-
 };
+
 
 // ==============================
 // RESET PASSWORD
